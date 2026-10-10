@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-scout"
+version = "0.1.0"
+description = "Weekly market analysis: strategy backtesting and growth screening for Russell 1000 + STOXX Europe 600"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.1",
+  "numpy>=1.26",
+  "pyarrow>=14",
+  "pyyaml>=6",
+  "requests>=2.31",
+  "yfinance>=0.2.54",
+  "plotly>=5.20",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
