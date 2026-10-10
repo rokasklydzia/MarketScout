@@ -1,0 +1,75 @@
+# market-scout configuration. All paths are relative to the project root
+# unless absolute. Moving to Azure later = changing data_dir / reports_dir.
+
+data_dir: data
+reports_dir: reports
+reporting_currency: EUR
+
+universe:
+  sources:
+    us:
+      name: Russell 1000 (iShares IWB)
+      url: https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/latest-holdings.csv
+      # If the download fails, save the CSV manually here and it will be used instead:
+      manual_file: data/manual/IWB_holdings.csv
+    eu:
+      name: STOXX Europe 600 (iShares EXSA)
+      url: https://www.ishares.com/ch/individual/en/products/251931/ishares-stoxx-europe-600-ucits-etf-de-fund/1495092304805.ajax?fileType=csv&fileName=EXSA_holdings&dataType=fund
+      manual_file: data/manual/EXSA_holdings.csv
+  overrides_file: config/symbol_overrides.csv
+  # Regional benchmarks (always downloaded). Sector-relative strength is
+  # measured against the median of same-sector peers in the universe,
+  # so no sector-ETF mapping is needed.
+  benchmarks:
+    us: IWB
+    eu: EXSA.DE
+
+download:
+  history_years: 5
+  batch_size: 50
+  pause_seconds: 2.0
+  max_retries: 3
+  incremental_overlap_days: 10
+  partial_run_threshold: 0.02   # mark run partial if > 2% of symbols fail
+  fx_pairs: [EURUSD=X, EURGBP=X, EURCHF=X, EURSEK=X, EURDKK=X, EURNOK=X, EURPLN=X]
+
+qa:
+  max_gap_days: 5
+  max_missing_share: 0.05
+  stale_days: 5
+  split_error_return: 0.60
+  min_history_days: 252
+
+features:
+  min_median_traded_value_eur: 5000000
+
+backtest:
+  initial_train_years: 2
+  test_block_months: 6
+  embargo_days: 21
+  long_only: true
+  top_quantile: 0.10
+  cost_bps:
+    us: 5
+    eu: 10
+  illiquid_cost_multiplier: 2.0      # applied below the 25th liquidity percentile
+  commission_bps: 1.0                # rough stand-in for IBKR tiered commissions
+  stress_cost_multiplier: 2.0        # strategy rejected if edge disappears at 2x costs
+  dsr_threshold: 0.95
+
+screen:
+  top_n_per_region: 25
+  gates:
+    min_median_traded_value_eur: 5000000
+    max_drawdown_from_high: 0.35
+    min_history_days: 252
+  weights:
+    price_strength: 0.40
+    growth: 0.35
+    quality: 0.15
+    risk_penalty: 0.10
+
+fundamentals:
+  # SEC asks for a descriptive User-Agent with contact email
+  sec_user_agent: "market-scout research (rokas.klydzia@gmail.com)"
+  refresh_days: 7
